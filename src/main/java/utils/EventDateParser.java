@@ -9,6 +9,7 @@ import java.util.Locale;
 
 public class EventDateParser {
     private static final Logger LOGGER = LogManager.getLogger(EventDateParser.class);
+
     private EventDateParser() {
         throw new IllegalStateException("Utility class");
     }

@@ -1,8 +1,7 @@
 package pages;
 
 import org.openqa.selenium.WebDriver;
-
-import static net.otus.edu.utils.Constants.BASE_URL;
+import static utils.Constants.BASE_URL;
 
 public class MainPage extends AbstractPage {
     public MainPage(WebDriver driver) {

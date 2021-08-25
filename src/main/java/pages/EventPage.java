@@ -3,8 +3,8 @@ package pages;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import static net.otus.edu.utils.Constants.BASE_URL;
-import static net.otus.edu.utils.Constants.EVENT_GLOBAL_LOADER_LOCATOR;
+import static utils.Constants.BASE_URL;
+import static utils.Constants.EVENT_GLOBAL_LOADER_LOCATOR;
 
 public class EventPage extends AbstractPage {
     private static final String URL = BASE_URL + "events";

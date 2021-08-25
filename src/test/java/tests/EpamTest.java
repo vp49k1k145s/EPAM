@@ -1,20 +1,23 @@
 package tests;
 
+import io.qameta.allure.Allure;
 import io.qameta.allure.Description;
 import io.qameta.allure.Feature;
-import io.qameta.allure.Link;
-impEventCard ort io.qameta.allure.Severity;
+import io.qameta.allure.Step;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import pages.TalkCard;
-import pages.TalkPage;
-import pages.TalksLibraryPage;
+import pages.*;
+import utils.EventDateParser;
 
 import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static pages.FilterPanel.Action.HIDE;
+import static pages.FilterPanel.Action.SHOW;
+import static utils.Constants.GO_TO_PAGE;
+import static webdriver.WebDriverService.getDriver;
 
 public class EpamTest {
     private static final Logger LOGGER = LogManager.getLogger(EpamTest.class);
@@ -124,5 +127,63 @@ public class EpamTest {
         Allure.step(String.format("На странице отображаются доклады, содержащие в названии ключевое слово поиска '%s'", word));
         assertTrue(rndTalkCard.getName().contains(word));
 
+    }
+
+    @Step("Пользователь открывает страницу 'Events'")
+    private EventPage openEventPage() {
+        EventPage eventPage = new EventPage(getDriver()).open();
+        LOGGER.info(GO_TO_PAGE, eventPage.getTitle());
+        assertNotNull(eventPage);
+        return eventPage;
+    }
+
+    @Step("Пользователь открывает страницу 'Video / Talks Library'")
+    private TalksLibraryPage openTalksLibraryPage() {
+        TalksLibraryPage talksLibraryPage = new TalksLibraryPage(getDriver()).open();
+        LOGGER.info(GO_TO_PAGE, talksLibraryPage.getTitle());
+        assertNotNull(talksLibraryPage);
+        return talksLibraryPage;
+    }
+
+    @Step("Пользователь переходит на вкладку '{tabName}'")
+    private EventPage openEventTab(String tabName) {
+        EventPage eventPage = openEventPage();
+        LOGGER.info("Переход на вкладку: {}", tabName);
+        Allure.step(String.format("Пользователь нажимает на вкладку '%s'", tabName));
+        eventPage.clickTabByName(tabName);
+        Allure.step("На странице отображаются карточки предстоящих мероприятий.");
+        assertTrue(eventPage.existEvents());
+        return eventPage;
+    }
+
+    @Step("Пользователь вводит в поиск строку: '{string}'")
+    private TalksLibraryPage searchTalksByName(TalksLibraryPage page, String string) {
+        Integer count = page.getTalkCardsCounter();
+        page.goToFilter().search(string);
+        waitResultsUpdate(page, count);
+        return page;
+    }
+
+    @Step("Пользователь выполняет поиск по категории '{category}', локации '{location}' и языку '{language}'")
+    private TalksLibraryPage searchTalksByParams(TalksLibraryPage page, String category, String location, String language) {
+        Integer count = page.getTalkCardsCounter();
+        Allure.step("Пользователь нажимает на More Filters");
+        FilterPanel filterPanel = page.goToFilter().moreFilters(SHOW);
+        Allure.step(String.format("Пользователь выбирает: Category – %s", category));
+        filterPanel.categoryFilter(SHOW).selectCategory(category);
+        Allure.step(String.format("Пользователь выбирает: Location – %s", location));
+        filterPanel.locationFilter(SHOW).selectLocation(location);
+        Allure.step(String.format("Пользователь выбирает: Language – %s", language));
+        filterPanel.languageFilter(SHOW).selectLanguage(language).languageFilter(HIDE);
+        waitResultsUpdate(page, count);
+        assertTrue(page.existTalkCards());
+        return page;
+    }
+
+    @Step("Ожидается обновление результатов")
+    private void waitResultsUpdate(TalksLibraryPage page, Integer count) {
+        while (count.equals(page.getTalkCardsCounter())) {
+            page.waitGlobalLoader();
+        }
     }
 }
